@@ -15,50 +15,48 @@
 
 typedef struct no *ptno;
 
-typedef struct no {
+typedef struct no
+{
     int tipo;
-    int valor;      /* para números (se necessário) */
-    char *lexema;   /* identifica/armazenar identificadores ou texto */
+    int valor;    /* para números */
+    char *lexema; /* para identificadores / texto */
     ptno filho, irmao;
 } no;
 
-ptno criaNo(int tipo, int valor, char *lexema);
+ptno criaNo(int tipo, int valor, const char *lexema);
 void adicionaFilho(ptno pai, ptno filho);
 
 void geraDot(ptno raiz, const char *filename);
 void geracod(ptno p, FILE *out);
 
-/* Tipos de nó (enum) */
-enum {
-    PRG,      /* programa */
-    ID,       /* identificador (nome do programa / variavel) */
-    DVR,      /* declaracao de variaveis */
-    TIPO,     /* tipo (inteiro) */
-    LVAR,     /* lista variaveis */
-    LCM,      /* lista comandos */
-    LEI,      /* leitura */
-    ESC,      /* escrita */
-    ATR,      /* atribuicao */
-    REP,      /* repeticao (enquanto) */
-    SELEC,    /* selecao (se .. entao .. senao .. fimse) */
-    NAO,      /* negacao (NAO) */
-    COMP,     /* comparacao binaria */
-    OPBIN,    /* operador binario aritmetico (+ - * /) */
-    NUM,      /* numero */
-    MUL,      /* multiplicacao (pode usar OPBIN) */
-    DIVI,     /* divisao */
-    SOMA,     /* soma */
-    SUB,      /* subtracao */
-    /* outras categorias utilitárias */
-    LISTA_COMANDOS,
-    LISTA_VARS,
-    /* tokens terminais para lexemas específicos */
-    PROG_NAME
+/* Tipos de nó */
+enum
+{
+    /* Estrutura do programa */
+    PRG,  /* programa */
+    ID,   /* identificador (nome / variável) */
+    DVR,  /* declaração de variáveis */
+    TIPO, /* tipo (inteiro) */
+    LVAR, /* lista de variáveis */
+    LCM,  /* lista de comandos */
+
+    /* comandos */
+    LEI,   /* leitura */
+    ESC,   /* escrita */
+    ATR,   /* atribuicao */
+    REP,   /* repeticao (enquanto) */
+    SELEC, /* selecao (se entao senao) */
+    NAO,   /* negacao */
+
+    /* expressões */
+    COMP,  /* comparacao (<, >, =, <>) - lexema guarda operador */
+    OPBIN, /* operador binario (+ - * /) - lexema guarda operador */
+    NUM    /* numero */
 };
 
-/* funções utilitárias usadas por outros módulos (definidas em utils.c) */
-extern int ROTULO;   /* contador de rótulos */
-extern int NUMVAR;   /* contador de variáveis (se necessário) */
+/* utilitários / geracao */
+extern int ROTULO;
+extern int NUMVAR;
 
 void empilha(int x);
 int desempilha(void);

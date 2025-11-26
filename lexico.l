@@ -1,13 +1,14 @@
 %{
-#include "sintatico.h"
+#include <stdio.h>
 #include <string.h>
-/* para atribuir lexema ao yylval */
-extern int yylval;
+#include <stdlib.h>
+#include "sintatico.h" /* header gerado pelo bison (-d) */
 %}
 
-DIGITO      [0-9]
-LETRA       [A-Za-z_]
-ID          {LETRA}({LETRA}|{DIGITO})*
+/* definicoes */
+DIGITO  [0-9]
+LETRA   [A-Za-z_]
+ID      {LETRA}({LETRA}|{DIGITO})*
 
 %%
 
@@ -26,38 +27,37 @@ ID          {LETRA}({LETRA}|{DIGITO})*
 "fimse"             { return FIMSE; }
 "nao"               { return NAO; }
 
-/* operadores e pontuação */
-"<="                { return ATRIB; }   /* conforme PDF, '<=' usado para atribuicao */
+/* operadores e simbolos */
+"<="                { return ATRIB; }   /* atribuição conforme enunciado */
 "<>"                { return DIF; }
 ">="                { return MAIG; }
 "<"                 { return MEN; }
 ">"                 { return MAI; }
 "="                 { return IG; }
 
-"+"                 { yylval = 0; return MAIS; }
-"-"                 { yylval = 0; return MENOS; }
-"*"                 { yylval = 0; return MULT; }
-"/"                 { yylval = 0; return DIVI; }
+"+"                 { return MAIS; }
+"-"                 { return MENOS; }
+"*"                 { return MULT; }
+"/"                 { return DIVI; }
 
 "("                 { return AP; }
 ")"                 { return FP; }
 ","                 { return VIRG; }
 ";"                 { return PTV; }
 
-{ID} {
-    yylval = 0;
-    /* comparar palavras reservadas já feitas acima, então aqui é identificador */
-    yylval = (int) strdup(yytext);
-    return IDENT;
-}
+/* identificador e numero com valores semanticos */
+{ID}    {
+            yylval.sval = strdup(yytext);
+            return IDENT;
+        }
 
 {DIGITO}+ {
-    yylval = atoi(yytext);
-    return NUM;
-}
+            yylval.ival = atoi(yytext);
+            return NUM;
+         }
 
-[ \t\r\n]+   { /* ignora espaços e quebras */ }
-.           { /* caractere desconhecido */ }
+[ \t\r\n]+   { /* ignora */ }
+.           { /* caractere desconhecido: ignora ou reporta */ }
 
 %%
 
