@@ -19,7 +19,7 @@ typedef struct no
 {
     int tipo;
     int valor;    
-    char *lexema; /* para identificadores,texto,operadores */
+    char *lexema; 
     ptno filho, irmao;
 } no;
 
