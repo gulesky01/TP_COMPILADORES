@@ -1,4 +1,12 @@
-/* tree.c - construção da árvore, saída .dot e gerador MVS */
+/*+=============================================================
+ |             UNIFAL - Universidade Federal de Alfenas .
+ |               BACHARELADO EM CIENCIA DA COMPUTACAO.
+ | Trabalho..: Construcao Arvore Sintatica e Geracao de Codigo
+ | Disciplina: Teoria de Linguagens e Compiladores
+ | Professor.: Luiz Eduardo da Silva
+ | Aluno.....: Gustao Andrade Moreira de Assis - 2024.1.08.012
+ | Data......: 30/11/2025
+ +=============================================================*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,7 +61,7 @@ static void dot_nodes(FILE *f, ptno p)
     switch (p->tipo)
     {
         case PRG:
-            snprintf(label, sizeof(label), "programa | ");
+            snprintf(label, sizeof(label), "programa");
             break;
 
         case ID:
@@ -61,49 +69,82 @@ static void dot_nodes(FILE *f, ptno p)
                      p->lexema ? p->lexema : "");
             break;
 
-        case DVR:
-            snprintf(label, sizeof(label), "declaracao de variaveis | ");
-            break;
-
         case TIPO:
             snprintf(label, sizeof(label), "tipo | inteiro");
             break;
 
+        case DVR:
+            snprintf(label, sizeof(label), "declaracao de variaveis");
+            break;
+
         case LVAR:
-            snprintf(label, sizeof(label), "lista variaveis | ");
+            snprintf(label, sizeof(label), "lista variaveis");
             break;
 
         case LCM:
-            snprintf(label, sizeof(label), "lista comandos | ");
+            snprintf(label, sizeof(label), "lista comandos");
             break;
 
         case LEI:
-            snprintf(label, sizeof(label), "leitura | ");
+            snprintf(label, sizeof(label), "leitura");
             break;
 
         case ESC:
-            snprintf(label, sizeof(label), "escrita | ");
+            snprintf(label, sizeof(label), "escrita");
             break;
 
         case ATR:
-            snprintf(label, sizeof(label), "atribuicao | ");
+            snprintf(label, sizeof(label), "atribuicao");
             break;
 
         case OPBIN:
-            snprintf(label, sizeof(label), "multiplica | ");
+            snprintf(label, sizeof(label), "operacao | %s",
+                     p->lexema ? p->lexema : "");
             break;
 
         case NO_NUM:
             snprintf(label, sizeof(label), "numero | %d", p->valor);
             break;
 
+        case COMP:
+    if (p->lexema)
+    {
+        if (strcmp(p->lexema, "<") == 0)
+            snprintf(label, sizeof(label), "compara menor");
+        else if (strcmp(p->lexema, ">") == 0)
+            snprintf(label, sizeof(label), "compara maior");
+        else if (strcmp(p->lexema, "=") == 0)
+            snprintf(label, sizeof(label), "compara igual");
+        else if (strcmp(p->lexema, "<>") == 0)
+            snprintf(label, sizeof(label), "compara diferente");
+        else
+            snprintf(label, sizeof(label), "comparacao %s", p->lexema);
+    }
+    else
+        snprintf(label, sizeof(label), "comparacao");
+    break;
+
+
+        case NO_NAO:
+            snprintf(label, sizeof(label), "negacao (NAO)");
+            break;
+
+        case REP:
+            snprintf(label, sizeof(label), "repeticao");
+            break;
+
+        case SELEC:
+            snprintf(label, sizeof(label), "selecao");
+            break;
+
         default:
-            snprintf(label, sizeof(label), "no | ");
+            snprintf(label, sizeof(label), "no");
             break;
     }
 
     fprintf(f, "n%p [ label=\"%s\" ];\n", (void*)p, label);
 
+    /* imprime filhos e irmaos */
     dot_nodes(f, p->filho);
     dot_nodes(f, p->irmao);
 }

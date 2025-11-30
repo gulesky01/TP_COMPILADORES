@@ -1,3 +1,13 @@
+/*+=============================================================
+ |             UNIFAL - Universidade Federal de Alfenas .
+ |               BACHARELADO EM CIENCIA DA COMPUTACAO.
+ | Trabalho..: Construcao Arvore Sintatica e Geracao de Codigo
+ | Disciplina: Teoria de Linguagens e Compiladores
+ | Professor.: Luiz Eduardo da Silva
+ | Aluno.....: Gustao Andrade Moreira de Assis - 2024.1.08.012
+ | Data......: 30/11/2025
+ +=============================================================*/
+
 %{
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,6 +17,7 @@
 extern int yylex();
 extern FILE *yyin;
 void yyerror(const char *s);
+void testaTipo(int tipo1, int tipo2, int ret);
 
 ptno raiz = NULL;
 %}
@@ -129,6 +140,10 @@ lista_cmd:
         adicionaFilho(p, $1);
         $$ = p;
     }
+    | /* vazio */
+    {
+        $$ = NULL;
+    }
     ;
 
 
@@ -151,6 +166,8 @@ comando:
     |
     T_IDENT T_ATRIB expr T_PTV
     {
+        int t = desempilha();
+        if (t != 1) yyerror("Precisa ser um inteiro");
         ptno p = criaNo(ATR,0,NULL);
         ptno id = criaNo(ID,0,$1);
 
@@ -162,6 +179,8 @@ comando:
     |
     T_ENQUANTO condicao T_FACA lista_cmd T_FIMENQ
     {
+        int t = desempilha();
+        if (t != 2) yyerror("Condicao precisa ser logica");
         ptno p = criaNo(REP,0,NULL);
 
         adicionaFilho(p, $2);  /* cond */
@@ -172,6 +191,8 @@ comando:
     |
     T_SE condicao T_ENTAO lista_cmd T_SENAO lista_cmd T_FIMSE
     {
+        int t = desempilha();
+        if (t != 2) yyerror("Condicao precisa ser logica");
         ptno p = criaNo(SELEC,0,NULL);
 
         adicionaFilho(p, $2);  /* cond */
@@ -183,6 +204,8 @@ comando:
     |
     T_SE condicao T_ENTAO lista_cmd T_FIMSE
     {
+        int t = desempilha();
+        if (t != 2) yyerror("Condicao precisa ser logica");
         ptno p = criaNo(SELEC,0,NULL);
 
         adicionaFilho(p, $2);  /* cond */
@@ -194,39 +217,63 @@ comando:
 
 
 /* ======================== CONDICAO ======================== */
+
 condicao:
-    expr T_MEN expr
+
+      expr T_MEN expr
     {
-        ptno p = criaNo(COMP,0,"<");
-        adicionaFilho(p,$1);
-        adicionaFilho(p,$3);
+        testaTipo(1,1,2);
+        empilha(2);
+        ptno p = criaNo(COMP, 0, "compara menor");
+        adicionaFilho(p, $1);
+        adicionaFilho(p, $3);
         $$ = p;
     }
+
     | expr T_MAI expr
     {
-        ptno p = criaNo(COMP,0,">");
-        adicionaFilho(p,$1);
-        adicionaFilho(p,$3);
+        testaTipo(1,1,2);
+        empilha(2);
+        ptno p = criaNo(COMP, 0, ">");
+        adicionaFilho(p, $1);
+        adicionaFilho(p, $3);
         $$ = p;
     }
+
     | expr T_IG expr
     {
-        ptno p = criaNo(COMP,0,"=");
-        adicionaFilho(p,$1);
-        adicionaFilho(p,$3);
+        testaTipo(1,1,2);
+        empilha(2);
+        ptno p = criaNo(COMP, 0, "=");
+        adicionaFilho(p, $1);
+        adicionaFilho(p, $3);
         $$ = p;
     }
+
     | expr T_DIF expr
     {
-        ptno p = criaNo(COMP,0,"<>");
-        adicionaFilho(p,$1);
-        adicionaFilho(p,$3);
+        testaTipo(1,1,2);
+        empilha(2);
+        ptno p = criaNo(COMP, 0, "<>");
+        adicionaFilho(p, $1);
+        adicionaFilho(p, $3);
         $$ = p;
     }
-    | T_NAO_LOGICO T_AP expr T_FP
+
+    /* ====== (condicao) ====== */
+    | T_AP condicao T_FP
     {
-        ptno p = criaNo(NO_NAO,0,NULL);
-        adicionaFilho(p,$3);
+        $$ = $2;
+    }
+
+    /* ====== nao condicao  (inclui nao (condicao)) ====== */
+    | T_NAO_LOGICO condicao
+    {
+        int t = desempilha();
+        if (t != 2) yyerror("Operador NAO exige logico");
+        empilha(2);
+        ptno p = criaNo(NO_NAO, 0, NULL);
+        adicionaFilho(p, $2);
         $$ = p;
     }
 ;
@@ -236,16 +283,19 @@ condicao:
 expr:
     T_NUM
     {
+        empilha(1);
         $$ = criaNo(NO_NUM,$1,NULL);
     }
     |
     T_IDENT
     {
+        empilha(1);
         $$ = criaNo(ID,0,$1);
     }
     |
     expr T_MAIS expr
     {
+        testaTipo(1,1,1);
         ptno p = criaNo(OPBIN,0,"+");
         adicionaFilho(p,$1);
         adicionaFilho(p,$3);
@@ -254,6 +304,7 @@ expr:
     |
     expr T_MENOS expr
     {
+        testaTipo(1,1,1);
         ptno p = criaNo(OPBIN,0,"-");
         adicionaFilho(p,$1);
         adicionaFilho(p,$3);
@@ -262,6 +313,7 @@ expr:
     |
     expr T_MULT expr
     {
+        testaTipo(1,1,1);
         ptno p = criaNo(OPBIN,0,"multiplica");
         adicionaFilho(p,$1);
         adicionaFilho(p,$3);
@@ -270,6 +322,7 @@ expr:
     |
     expr T_DIVI expr
     {
+        testaTipo(1,1,1);
         ptno p = criaNo(OPBIN,0,"/");
         adicionaFilho(p,$1);
         adicionaFilho(p,$3);

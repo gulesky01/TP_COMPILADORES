@@ -1,11 +1,11 @@
 /*+=============================================================
- | UNIFAL = Universidade Federal de Alfenas .
- | BACHARELADO EM CIENCIA DA COMPUTACAO.
- | Trabalho . . : Construcao Arvore Sintatica e Geracao de Codigo
- | Disciplina : Teoria de Linguagens e Compiladores
- | Professor . : Luiz Eduardo da Silva
- | Aluno . . . : Gustao Andrade Moreira de Assis  - 2024.1.08.012
- | Data . . . : 99/99/9999
+ |             UNIFAL - Universidade Federal de Alfenas .
+ |               BACHARELADO EM CIENCIA DA COMPUTACAO.
+ | Trabalho..: Construcao Arvore Sintatica e Geracao de Codigo
+ | Disciplina: Teoria de Linguagens e Compiladores
+ | Professor.: Luiz Eduardo da Silva
+ | Aluno.....: Gustao Andrade Moreira de Assis - 2024.1.08.012
+ | Data......: 30/11/2025
  +=============================================================*/
 
 #ifndef TREE_H
@@ -19,46 +19,56 @@ typedef struct no
 {
     int tipo;
     int valor;    /* para números */
-    char *lexema; /* para identificadores / texto */
+    char *lexema; /* para identificadores / texto / operadores */
     ptno filho, irmao;
 } no;
+
+/* Tipos semânticos para teste de tipos */
+enum {
+    TIPO_INTEIRO = 1,
+    TIPO_LOGICO  = 2
+};
 
 ptno criaNo(int tipo, int valor, const char *lexema);
 void adicionaFilho(ptno pai, ptno filho);
 
+/* gerar árvore e código */
 void geraDot(ptno raiz, const char *filename);
 void geracod(ptno p, FILE *out);
 
-/* Tipos de nó (Corrigidos para evitar conflito com tokens do Bison) */
+/* Tipos de nó */
 enum
 {
     /* Estrutura do programa */
-    PRG,  /* programa */
-    ID,   /* identificador (nome / variável) */
-    DVR,  /* declaração de variáveis */
-    TIPO, /* tipo (inteiro) */
-    LVAR, /* lista de variáveis */
-    LCM,  /* lista de comandos */
+    PRG,
+    ID,
+    DVR,
+    TIPO,
+    LVAR,
+    LCM,
 
     /* comandos */
-    LEI,   /* leitura */
-    ESC,   /* escrita */
-    ATR,   /* atribuicao */
-    REP,   /* repeticao (enquanto) */
-    SELEC, /* selecao (se entao senao) */
-    NO_NAO,   /* negacao (RENOMEADO de NAO) */
+    LEI,
+    ESC,
+    ATR,
+    REP,
+    SELEC,
+    NO_NAO,
 
     /* expressões */
-    COMP,  /* comparacao (<, >, =, <>) - lexema guarda operador */
-    OPBIN, /* operador binario (+ - * /) - lexema guarda operador */
-    NO_NUM    /* numero (RENOMEADO de NUM) */
+    COMP,
+    OPBIN,
+    NO_NUM
 };
 
-/* utilitários / geracao */
+/* utilitários */
 extern int ROTULO;
 extern int NUMVAR;
 
 void empilha(int x);
 int desempilha(void);
+
+/* função pedida pelo professor */
+void testaTipo(int tipo1, int tipo2, int ret);
 
 #endif /* TREE_H */

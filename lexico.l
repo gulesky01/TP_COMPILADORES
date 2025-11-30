@@ -1,3 +1,14 @@
+/*+=============================================================
+ |             UNIFAL - Universidade Federal de Alfenas .
+ |               BACHARELADO EM CIENCIA DA COMPUTACAO.
+ | Trabalho..: Construcao Arvore Sintatica e Geracao de Codigo
+ | Disciplina: Teoria de Linguagens e Compiladores
+ | Professor.: Luiz Eduardo da Silva
+ | Aluno.....: Gustao Andrade Moreira de Assis - 2024.1.08.012
+ | Data......: 30/11/2025
+ +=============================================================*/
+
+
 %{
 #include <stdio.h>
 #include <string.h>
