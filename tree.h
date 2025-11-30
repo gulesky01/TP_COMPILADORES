@@ -4,7 +4,7 @@
  | Trabalho . . : Construcao Arvore Sintatica e Geracao de Codigo
  | Disciplina : Teoria de Linguagens e Compiladores
  | Professor . : Luiz Eduardo da Silva
- | Aluno . . . : (preencher)
+ | Aluno . . . : Gustao Andrade Moreira de Assis  - 2024.1.08.012
  | Data . . . : 99/99/9999
  +=============================================================*/
 
@@ -29,7 +29,7 @@ void adicionaFilho(ptno pai, ptno filho);
 void geraDot(ptno raiz, const char *filename);
 void geracod(ptno p, FILE *out);
 
-/* Tipos de nó */
+/* Tipos de nó (Corrigidos para evitar conflito com tokens do Bison) */
 enum
 {
     /* Estrutura do programa */
@@ -46,12 +46,12 @@ enum
     ATR,   /* atribuicao */
     REP,   /* repeticao (enquanto) */
     SELEC, /* selecao (se entao senao) */
-    NAO,   /* negacao */
+    NO_NAO,   /* negacao (RENOMEADO de NAO) */
 
     /* expressões */
     COMP,  /* comparacao (<, >, =, <>) - lexema guarda operador */
     OPBIN, /* operador binario (+ - * /) - lexema guarda operador */
-    NUM    /* numero */
+    NO_NUM    /* numero (RENOMEADO de NUM) */
 };
 
 /* utilitários / geracao */

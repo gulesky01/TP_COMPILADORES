@@ -25,93 +25,101 @@ ptno criaNo(int tipo, int valor, const char *lexema)
     return n;
 }
 
-/* adiciona filho como primeiro filho (mantém filhos encadeados por 'irmao') */
+/* adiciona filho ao final da lista de filhos (filho encadeado por 'irmao') */
 void adicionaFilho(ptno pai, ptno filho)
 {
-    if (!pai || !filho)
-        return;
-    filho->irmao = pai->filho;
-    pai->filho = filho;
+    if (!pai || !filho) return;
+
+    if (pai->filho == NULL) {
+        pai->filho = filho;
+    }
+    else {
+        ptno p = pai->filho;
+        while (p->irmao != NULL)
+            p = p->irmao;
+        p->irmao = filho;
+    }
 }
 
 /* --- gera .dot --- */
+/* Imprime todos os nós começando por p e seus irmãos (itera irmãos).
+   Para cada nó impresso, recursa apenas sobre seu filho (não sobre irmão). */
 static void dot_nodes(FILE *f, ptno p)
 {
-    if (!p)
-        return;
+    if (!p) return;
+
     char label[256];
+
     switch (p->tipo)
     {
-    case PRG:
-        snprintf(label, sizeof(label), "programa | ");
-        break;
-    case ID:
-        snprintf(label, sizeof(label), "identificador | %s", p->lexema ? p->lexema : "");
-        break;
-    case DVR:
-        snprintf(label, sizeof(label), "declaracao de variaveis | ");
-        break;
-    case TIPO:
-        snprintf(label, sizeof(label), "tipo | inteiro");
-        break;
-    case LVAR:
-        snprintf(label, sizeof(label), "lista variaveis | ");
-        break;
-    case LCM:
-        snprintf(label, sizeof(label), "lista comandos | ");
-        break;
-    case LEI:
-        snprintf(label, sizeof(label), "leitura | ");
-        break;
-    case ESC:
-        snprintf(label, sizeof(label), "escrita | ");
-        break;
-    case ATR:
-        snprintf(label, sizeof(label), "atribuicao | ");
-        break;
-    case REP:
-        snprintf(label, sizeof(label), "repeticao | ");
-        break;
-    case SELEC:
-        snprintf(label, sizeof(label), "selecao | ");
-        break;
-    case NAO:
-        snprintf(label, sizeof(label), "negacao (NAO) | ");
-        break;
-    case COMP:
-        snprintf(label, sizeof(label), "compara | %s", p->lexema ? p->lexema : "");
-        break;
-    case OPBIN:
-        snprintf(label, sizeof(label), "opbin | %s", p->lexema ? p->lexema : "");
-        break;
-    case NUM:
-        snprintf(label, sizeof(label), "numero | %d", p->valor);
-        break;
-    default:
-        snprintf(label, sizeof(label), "no | %s", p->lexema ? p->lexema : "");
-        break;
+        case PRG:
+            snprintf(label, sizeof(label), "programa | ");
+            break;
+
+        case ID:
+            snprintf(label, sizeof(label), "identificador | %s",
+                     p->lexema ? p->lexema : "");
+            break;
+
+        case DVR:
+            snprintf(label, sizeof(label), "declaracao de variaveis | ");
+            break;
+
+        case TIPO:
+            snprintf(label, sizeof(label), "tipo | inteiro");
+            break;
+
+        case LVAR:
+            snprintf(label, sizeof(label), "lista variaveis | ");
+            break;
+
+        case LCM:
+            snprintf(label, sizeof(label), "lista comandos | ");
+            break;
+
+        case LEI:
+            snprintf(label, sizeof(label), "leitura | ");
+            break;
+
+        case ESC:
+            snprintf(label, sizeof(label), "escrita | ");
+            break;
+
+        case ATR:
+            snprintf(label, sizeof(label), "atribuicao | ");
+            break;
+
+        case OPBIN:
+            snprintf(label, sizeof(label), "multiplica | ");
+            break;
+
+        case NO_NUM:
+            snprintf(label, sizeof(label), "numero | %d", p->valor);
+            break;
+
+        default:
+            snprintf(label, sizeof(label), "no | ");
+            break;
     }
-    fprintf(f, "n%p [ label = \"%s\" ];\n", (void *)p, label);
-    if (p->filho)
-        dot_nodes(f, p->filho);
-    if (p->irmao)
-        dot_nodes(f, p->irmao);
+
+    fprintf(f, "n%p [ label=\"%s\" ];\n", (void*)p, label);
+
+    dot_nodes(f, p->filho);
+    dot_nodes(f, p->irmao);
 }
+
 
 static void dot_edges(FILE *f, ptno p)
 {
-    if (!p)
-        return;
-    ptno c = p->filho;
-    while (c)
+    if (!p) return;
+
+    for (ptno c = p->filho; c; c = c->irmao)
     {
-        fprintf(f, "n%p -> n%p;\n", (void *)p, (void *)c);
+        fprintf(f, "n%p -> n%p;\n", (void*)p, (void*)c);
         dot_edges(f, c);
-        c = c->irmao;
     }
-    if (p->irmao)
-        dot_edges(f, p->irmao);
 }
+
 
 void geraDot(ptno raiz, const char *filename)
 {
@@ -123,10 +131,15 @@ void geraDot(ptno raiz, const char *filename)
     }
     fprintf(f, "digraph {\n");
     fprintf(f, "node [ shape=record, height=.1 ];\n");
-    dot_nodes(f, raiz);
-    dot_edges(f, raiz);
+    if (raiz)
+    {
+        dot_nodes(f, raiz);
+        dot_edges(f, raiz);
+    }
     fprintf(f, "}\n");
     fclose(f);
+    
+
 }
 
 /* --- Gerador MVS --- */
@@ -142,7 +155,7 @@ static void gen_expr(ptno p, FILE *out)
 {
     if (!p)
         return;
-    if (p->tipo == NUM)
+    if (p->tipo == NO_NUM)
     {
         fprintf(out, "\tCRCT\t%d\n", p->valor);
     }
@@ -166,7 +179,7 @@ static void gen_expr(ptno p, FILE *out)
                 fprintf(out, "\tSOMA\n");
             else if (strcmp(p->lexema, "-") == 0)
                 fprintf(out, "\tSUBT\n");
-            else if (strcmp(p->lexema, "*") == 0)
+            else if (strcmp(p->lexema, "*") == 0 || strcmp(p->lexema, "multiplica") == 0)
                 fprintf(out, "\tMULT\n");
             else if (strcmp(p->lexema, "/") == 0)
                 fprintf(out, "\tDIVI\n");
@@ -196,7 +209,7 @@ static void gen_expr(ptno p, FILE *out)
                 fprintf(out, "\t; COMP %s\n", p->lexema);
         }
     }
-    else if (p->tipo == NAO)
+    else if (p->tipo == NO_NAO)
     {
         ptno expr = p->filho;
         gen_expr(expr, out);
@@ -232,6 +245,7 @@ void geracod(ptno p, FILE *out)
             geracod(p3, out); /* corpo */
         fprintf(out, "\tFIMP\n");
         break;
+    
 
     case DVR:
         /* DVR -> TIPO LVAR
@@ -280,7 +294,7 @@ void geracod(ptno p, FILE *out)
         if (p->filho)
         {
             /* pode ser NUM ou ID ou expressão */
-            if (p->filho->tipo == NUM)
+            if (p->filho->tipo == NO_NUM)
             {
                 fprintf(out, "\tCRCT\t%d\n", p->filho->valor);
             }
