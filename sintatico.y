@@ -22,14 +22,13 @@ void testaTipo(int tipo1, int tipo2, int ret);
 ptno raiz = NULL;
 %}
 
-/* Tipos Semânticos */
 %union {
     int ival;
     char *sval;
     ptno no;
 }
 
-/* Tokens (usando o mesmo prefixo T_ que o lexico.l retorna) */
+/* Tokens */
 %token T_PROGR
 %token T_INICIO 
 %token T_FIMPROG
@@ -69,12 +68,11 @@ ptno raiz = NULL;
 %token <sval> T_IDENT
 %token <ival> T_NUM
 
-/* Tipos de não-terminais que carregam ptno (árvore) */
+
 %type <no> programa dvr lista_var lista_cmd comando condicao expr
 
 %%
 
-/* ======================= PROGRAMA ======================= */
 programa:
     T_PROGR T_IDENT dvr T_INICIO lista_cmd T_FIMPROG
     {
@@ -91,7 +89,6 @@ programa:
 ;
 
 
-/* ===================== DECLARACAO ===================== */
 dvr:
     T_INTEIRO lista_var
     {
@@ -107,7 +104,6 @@ dvr:
 ;
 
 
-/* ===================== LISTA VARIAVEIS ===================== */
 lista_var:
     T_IDENT
     {
@@ -125,7 +121,6 @@ lista_var:
 ;
 
 
-/* ===================== LISTA DE COMANDOS ===================== */
 lista_cmd:
     comando lista_cmd
     {
@@ -147,7 +142,6 @@ lista_cmd:
     ;
 
 
-/* ========================= COMANDOS ========================= */
 comando:
     T_LEIA T_IDENT T_PTV
     {
@@ -216,8 +210,6 @@ comando:
 ;
 
 
-/* ======================== CONDICAO ======================== */
-
 condicao:
 
       expr T_MEN expr
@@ -260,13 +252,11 @@ condicao:
         $$ = p;
     }
 
-    /* ====== (condicao) ====== */
     | T_AP condicao T_FP
     {
         $$ = $2;
     }
 
-    /* ====== nao condicao  (inclui nao (condicao)) ====== */
     | T_NAO_LOGICO condicao
     {
         int t = desempilha();
@@ -279,7 +269,6 @@ condicao:
 ;
 
 
-/* ===================== EXPRESSÕES ===================== */
 expr:
     T_NUM
     {

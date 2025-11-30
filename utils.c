@@ -42,8 +42,8 @@ int desempilha(void)
 
 void testaTipo(int tipo1, int tipo2, int ret)
 {
-    int t1 = desempilha();  // último empilhado  (operando direito)
-    int t2 = desempilha();  // penúltimo         (operando esquerdo)
+    int t1 = desempilha();  
+    int t2 = desempilha(); 
 
     if (t1 != tipo1 || t2 != tipo2)
         yyerror("Incompatibilidade de tipo!");

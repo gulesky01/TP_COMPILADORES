@@ -75,7 +75,7 @@ numero          [0-9]+
     return T_NUM;
 }
 
-[ \t\r\n]+      { /* ignora todos os espaços, tabs e enters */ }
+[ \t\r\n]+      { /* ignoraos espaços, tabs e enters */ }
 
 
 .               { yyerror("ERRO LEXICO"); }

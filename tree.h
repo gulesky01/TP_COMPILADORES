@@ -18,12 +18,12 @@ typedef struct no *ptno;
 typedef struct no
 {
     int tipo;
-    int valor;    /* para números */
-    char *lexema; /* para identificadores / texto / operadores */
+    int valor;    
+    char *lexema; /* para identificadores,texto,operadores */
     ptno filho, irmao;
 } no;
 
-/* Tipos semânticos para teste de tipos */
+
 enum {
     TIPO_INTEIRO = 1,
     TIPO_LOGICO  = 2
@@ -32,14 +32,13 @@ enum {
 ptno criaNo(int tipo, int valor, const char *lexema);
 void adicionaFilho(ptno pai, ptno filho);
 
-/* gerar árvore e código */
+
 void geraDot(ptno raiz, const char *filename);
 void geracod(ptno p, FILE *out);
 
-/* Tipos de nó */
 enum
 {
-    /* Estrutura do programa */
+    
     PRG,
     ID,
     DVR,
@@ -47,7 +46,7 @@ enum
     LVAR,
     LCM,
 
-    /* comandos */
+  
     LEI,
     ESC,
     ATR,
@@ -55,20 +54,20 @@ enum
     SELEC,
     NO_NAO,
 
-    /* expressões */
+    
     COMP,
     OPBIN,
     NO_NUM
 };
 
-/* utilitários */
+
 extern int ROTULO;
 extern int NUMVAR;
 
 void empilha(int x);
 int desempilha(void);
 
-/* função pedida pelo professor */
+
 void testaTipo(int tipo1, int tipo2, int ret);
 
-#endif /* TREE_H */
+#endif 

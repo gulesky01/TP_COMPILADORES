@@ -13,7 +13,6 @@
 #include <string.h>
 #include "tree.h"
 
-/* cria nó */
 ptno criaNo(int tipo, int valor, const char *lexema)
 {
     ptno n = (ptno)malloc(sizeof(struct no));
@@ -33,7 +32,7 @@ ptno criaNo(int tipo, int valor, const char *lexema)
     return n;
 }
 
-/* adiciona filho ao final da lista de filhos (filho encadeado por 'irmao') */
+
 void adicionaFilho(ptno pai, ptno filho)
 {
     if (!pai || !filho) return;
@@ -49,9 +48,6 @@ void adicionaFilho(ptno pai, ptno filho)
     }
 }
 
-/* --- gera .dot --- */
-/* Imprime todos os nós começando por p e seus irmãos (itera irmãos).
-   Para cada nó impresso, recursa apenas sobre seu filho (não sobre irmão). */
 static void dot_nodes(FILE *f, ptno p)
 {
     if (!p) return;
@@ -124,7 +120,6 @@ static void dot_nodes(FILE *f, ptno p)
         snprintf(label, sizeof(label), "comparacao");
     break;
 
-
         case NO_NAO:
             snprintf(label, sizeof(label), "negacao (NAO)");
             break;
@@ -144,7 +139,7 @@ static void dot_nodes(FILE *f, ptno p)
 
     fprintf(f, "n%p [ label=\"%s\" ];\n", (void*)p, label);
 
-    /* imprime filhos e irmaos */
+    
     dot_nodes(f, p->filho);
     dot_nodes(f, p->irmao);
 }
@@ -183,15 +178,13 @@ void geraDot(ptno raiz, const char *filename)
 
 }
 
-/* --- Gerador MVS --- */
 
-/* Instruções MVS definidas pelo professor - usaremos os mnemonicos exatos */
 extern int ROTULO;
 extern int NUMVAR;
 extern void empilha(int x);
 extern int desempilha(void);
 
-/* gera expressões - deixa resultado no topo da pilha MVS */
+
 static void gen_expr(ptno p, FILE *out)
 {
     if (!p)
@@ -202,7 +195,7 @@ static void gen_expr(ptno p, FILE *out)
     }
     else if (p->tipo == ID)
     {
-        /* variáveis globais: carrega valor global */
+        
         if (p->lexema)
             fprintf(out, "\tCRVG\t%s\n", p->lexema);
         else
@@ -258,7 +251,6 @@ static void gen_expr(ptno p, FILE *out)
     }
     else
     {
-        /* caso composto - percorre filhos */
         if (p->filho)
             gen_expr(p->filho, out);
         if (p->irmao)
@@ -266,7 +258,7 @@ static void gen_expr(ptno p, FILE *out)
     }
 }
 
-/* geracod: percorre nós e emite instruções MVS */
+
 void geracod(ptno p, FILE *out)
 {
     if (!p)
@@ -275,23 +267,20 @@ void geracod(ptno p, FILE *out)
     switch (p->tipo)
     {
     case PRG:
-        p1 = p->filho;              /* id */
-        p2 = p1 ? p1->irmao : NULL; /* dvr */
-        p3 = p2 ? p2->irmao : NULL; /* lcm */
+        p1 = p->filho;              
+        p2 = p1 ? p1->irmao : NULL;
+        p3 = p2 ? p2->irmao : NULL; 
         fprintf(out, "\tINPP\n");
         NUMVAR = 0;
         if (p2)
-            geracod(p2, out); /* declara variaveis (conta) */
+            geracod(p2, out); 
         if (p3)
-            geracod(p3, out); /* corpo */
+            geracod(p3, out); 
         fprintf(out, "\tFIMP\n");
         break;
     
 
     case DVR:
-        /* DVR -> TIPO LVAR
-           contamos variáveis (globais) mas também geramos AMEM se quiser alocar
-           Vamos só incrementar NUMVAR; se desejar emitir AMEM, poderia ser feito aqui. */
         {
             ptno tipo = p->filho;
             ptno lista = tipo ? tipo->irmao : NULL;
@@ -301,8 +290,7 @@ void geracod(ptno p, FILE *out)
                 NUMVAR++;
                 v = v->irmao;
             }
-            /* opcional: alocar memória global (AMEM) com NUMVAR
-               aqui não sabemos o endereco; muitos MVS usam AMEM n para reservar */
+           
             if (NUMVAR > 0)
                 fprintf(out, "\tAMEM\t%d\n", NUMVAR);
         }
@@ -311,7 +299,7 @@ void geracod(ptno p, FILE *out)
     case LCM:
     {
         ptno cmd = p->filho;
-        /* filhos encadeados por irmao */
+  
         while (cmd)
         {
             geracod(cmd, out);
@@ -334,7 +322,6 @@ void geracod(ptno p, FILE *out)
     case ESC:
         if (p->filho)
         {
-            /* pode ser NUM ou ID ou expressão */
             if (p->filho->tipo == NO_NUM)
             {
                 fprintf(out, "\tCRCT\t%d\n", p->filho->valor);
@@ -348,7 +335,6 @@ void geracod(ptno p, FILE *out)
         break;
 
     case ATR:
-        /* filho = ID, filho->irmao = expr */
         if (p->filho)
         {
             ptno var = p->filho;
@@ -362,7 +348,6 @@ void geracod(ptno p, FILE *out)
         break;
 
     case REP:
-        /* filho = cond, filho->irmao = lista_cmd */
         {
             ptno cond = p->filho;
             ptno bloco = cond ? cond->irmao : NULL;
@@ -379,7 +364,6 @@ void geracod(ptno p, FILE *out)
         break;
 
     case SELEC:
-        /* filho = cond, filho->irmao = entao, entao->irmao = senao (opcional) */
         {
             ptno cond = p->filho;
             ptno entao = cond ? cond->irmao : NULL;
@@ -399,7 +383,6 @@ void geracod(ptno p, FILE *out)
         break;
 
     default:
-        /* percorre recursivamente */
         if (p->filho)
             geracod(p->filho, out);
         break;
